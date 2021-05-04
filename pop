@@ -1,0 +1,127 @@
+/*
+pop
+March 31, 2021
+Melania Czobit
+Purpose: Write a C program which simulates the operation of a soft drink vending machine
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#define MINPRICE 30
+#define MAXPRICE 105
+#define NICKEL 5
+#define DIME 10
+#define QUARTER 25
+
+void welcome_message(int);
+void payment(int);
+void returnchange(int);
+
+int main(int argc, char *argv[]){  // argc is number of arguments, argv is array of strings containing arguments
+
+   int price;
+
+   if (argc == 1) {     // checking for command line argument
+      printf("Please specify selling price as a command line argument.\n");
+      printf("Usage: pop [price] \n");
+      return 1;  // return to operating system
+   }
+   if (argc == 2) {  // if selling price given
+      price = atoi(argv[1]);    // atoi converts string to integer, assigned to selling price
+      if ( price<MINPRICE || price>MAXPRICE ){   // selling price between the two selling values
+          printf("Price must be from %d and %d cents inclusive.\n", MINPRICE, MAXPRICE);
+          return 1;  // return to operating system
+      }
+      if(price%5 != 0){   // checking that price is a multiple of 5
+         printf("Price must be a multiple of 5.\n");
+         return 1;  // return to operating system
+      }
+   }
+printf("Welcome to my C Pop Machine!\n");
+welcome_message(price);  // calls welcome_message function, with price defined in command argument as input
+return(0);
+}
+
+
+void welcome_message(int setprice) {
+// the purpose of this function is to display the welcome message stating the pop price and what coins and commands are accepted
+// this function will be called again after the pop dispenses as a continual prompt for additional sales
+   printf("\n");
+   printf("Pop is %d cents. Please insert any combination of nickels [N/n], dimes [D/d] or quarters [Q/q]. You can also press R or r for coin return.\n", setprice);
+   payment(setprice); // call the payment function, with the setprice as input
+}
+
+void payment(int theprice) {
+// the purpose of this function is to prompt the user to enter coins, and display total inserted and how much more money is required
+// also allows coins to be returned (calling returnchange) or shutdown (maintenance action)
+// provides change for overpayment and calls welcome_message function after sale completed and product dispenses
+   char coin;
+   int total=0;
+   int overpayment;
+
+   while (total<theprice){  // check that user has not inserted sale amount
+
+      printf("Enter coin (NDQR) : ");  // prompt for user to insert coin
+      scanf(" %c", &coin);
+
+      switch (coin){   // switch case to determine what action to take based on coin inserted
+         case 'N':
+         case 'n':
+            printf ("Nickel detected.\n");
+            total = total + NICKEL;
+            break;
+
+         case 'D':
+         case 'd':
+            printf("Dime detected.\n");
+            total = total + DIME;
+            break;
+
+         case 'Q':
+         case 'q':
+            printf("Quarter detected.\n");
+            total = total + QUARTER;
+            break;
+
+         case 'R':
+         case 'r':
+            returnchange(total);  // calls returnchange function to give user their change
+            welcome_message(theprice);
+            break;
+
+         case 'E':
+         case 'e':
+             returnchange(total);
+             printf("Shutting Down. Goodbye.\n");
+             exit(0); // maintence action, will return to operating system
+             break;
+
+         default:
+            printf("Unknown coin rejected.\n");  // if coin is not recognized
+            break;
+      }
+
+      printf("You have entered a total of %d cents.\n", total);  // prints total inserted
+
+      if (total<theprice){
+         printf("Please enter %d more cents.\n", theprice-total);  // the amount still required for sale
+      }
+      if (total>=theprice){   // if user has inserted enough money
+         printf("Pop is dispensed. Thank you for your business! Please come again.\n");
+         overpayment = total - theprice;   // calculate change, if required
+         returnchange(overpayment);
+         welcome_message(theprice);  // calls welcome_message function to prompt next sale
+      }
+   }
+}
+
+void returnchange(int change) {
+// the purpose of this function is to calculate the change the user needs
+   int nickels;
+   int dimes;
+
+   dimes = change / DIME;         // number of dimes, allows for fewest coins
+   nickels = (change % DIME) / NICKEL;  // number of nickels in change
+   printf("Change given: %d cents as %d dime(s) and %d nickel(s).\n", change, dimes, nickels);
+}
+
